@@ -58,22 +58,24 @@ def create_app(test_config=None):
     @app.route('/books/<int:book_id>',methods=['PATCH'])
     def  update_book(book_id):
         body = request.get_json()
-        try:
-            book = Book.query.filter(Book.id == book_id).one_or_none()
-            if book is None:
+
+        book = Book.query.filter(Book.id == book_id).one_or_none()
+        if book is None:
                 abort(404)
-            if 'rating' in body:
-                book.rating = body.get('rating')
-            book.update()
+        try:
+            if "rating" in body:
+                book.rating = int(body.get('rating'))
+                book.update()
             
-        except:
-            db.session.rollback()
-            abort(400)
-        finally:
-            db.session.close()
-            return  jsonify({
-                'success':True,
+            return  jsonify(
+                {
+                    'success':True,
                 })
+            
+        except Exception as e:
+            #print(e)
+            abort(400)
+            
     @app.route('/books/<int:book_id>',methods=['DELETE'])
     def delete_book(book_id):
         try:
@@ -123,7 +125,7 @@ def create_app(test_config=None):
         return jsonify({
             "success": False, 
             "error": 404,
-            "message": "resource Not found"
+            "message": "resource not found"
         }), 404
 
     @app.errorhandler(422)
@@ -145,7 +147,7 @@ def create_app(test_config=None):
         return jsonify({
             "success": False, 
             "error": 405,
-            "message": "method not found"
+            "message": "method not allowed"
         }), 405
   
   
