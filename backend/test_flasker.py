@@ -78,7 +78,7 @@ class BookTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'resource not found')
     
     
-    '''
+    
     def test_delete_book(self):
         res = self.client().delete('/books/3')
         data = json.loads(res.data)
@@ -90,7 +90,7 @@ class BookTestCase(unittest.TestCase):
         self.assertEqual(data['deleted'], 3)
         self.assertTrue(data['total_books'])
         self.assertTrue(len(data['books']))
-        self.assertEqual(book, None) '''
+        self.assertEqual(book, None) 
     
     def test_404_if_book_does_not_exist(self):
         res = self.client().delete('/books/1000')
@@ -115,6 +115,25 @@ class BookTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 405)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'method not allowed')
+    
+    def test_get_book_search_with_results(self):
+        res = self.client().post('/books', json={'search':'Novel'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['total_books'])
+        self.assertEqual(len(data['books']), 2)
+
+    def test_get_book_search_without_results(self):
+        res = self.client().post('/books', json={'search':'afan'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['total_books'], 0)
+        self.assertEqual(len(data['books']), 0)
+
 
 
 

@@ -1,4 +1,5 @@
 from crypt import methods
+import json
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy  # , or_
@@ -104,20 +105,32 @@ def create_app(test_config=None):
         title = body.get('title',None)
         author = body.get('author',None)
         rating = body.get('rating',None)
+        search = body.get('search', None)
 
         try:
-            book = Book(title=title,author=author,rating=rating)
-            book.insert()
-            selection = Book.query.order_by(Book.id).all()
-            current_books = paginate_books(request,selection)
-            return jsonify({
-                'success':True,
-                'created':book.id,
-                'books':current_books,
-                'total_books':len(selection)
+            if search:
+                selection = Book.query.order_by(Book.id).filter(Book.title.ilike('%{}%'.format(search))).all()
+                current_books = paginate_books(request, selection)
 
-            })
-        except:
+                return jsonify({
+                    'success': True,
+                    'books': current_books,
+                    'total_books': len(selection)
+                })
+            else:
+                book = Book(title=title,author=author,rating=rating)
+                book.insert()
+                selection = Book.query.order_by(Book.id).all()
+                current_books = paginate_books(request,selection)
+                return jsonify({
+                    'success':True,
+                    'created':book.id,
+                    'books':current_books,
+                    'total_books':len(selection)
+
+                })
+        except Exception as e:
+            print(e)
             abort(422)
    
     @app.errorhandler(404)
